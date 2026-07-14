@@ -1,0 +1,15 @@
+# dependencias
+node_modules/
+
+# archivos locales de Vercel
+.vercel/
+
+# variables de entorno (¡nunca subir secretos!)
+.env
+.env.local
+.env*.local
+
+# sistema
+.DS_Store
+Thumbs.db
+*.log
