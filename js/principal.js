@@ -87,6 +87,9 @@ if(getSeen().length===0){setSeen(logrosDesbloqueados().map(l=>l.id))}
 switchAuthMode("login");
 setTimeout(async ()=>{
   document.getElementById("splash").classList.add("hide");
+  // Modo Amigos: si el link trae la rutina de un amigo y no hay cuenta,
+  // arrancar el flujo de invitado en vez del muro de login.
+  if(typeof GUEST_MODE!=="undefined" && GUEST_MODE){ arrancarModoAmigo(); return; }
   const auth=getAuth();
   if(auth){
     // sesión existente: cargar datos de la nube y marcar online

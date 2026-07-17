@@ -444,6 +444,7 @@ svg.chart circle{cursor:pointer}
   padding:13px 14px;margin-bottom:9px}
 .cdt-ex-top{display:flex;align-items:center;gap:8px;margin-bottom:7px}
 .cdt-ex-n{flex:1;font-size:.9rem;font-weight:700;display:flex;align-items:center;gap:6px}
+.cdt-day{font-size:.72rem;font-weight:600;opacity:.55}
 .cdt-prtag{background:var(--gold);color:#3a2600;font-size:.56rem;font-weight:900;
   padding:2px 6px;border-radius:5px;display:inline-flex;align-items:center;gap:2px}
 .cdt-editb{flex:0 0 auto;background:var(--card2);border:1px solid var(--line);color:var(--sky);

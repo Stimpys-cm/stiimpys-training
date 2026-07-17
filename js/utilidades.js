@@ -7,6 +7,24 @@ function nowStamp(){const d=new Date();
   return{iso:d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"),
     time:String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")}}
 
+/* Día de la semana (nombre de ALL_DAYS) a partir de una fecha ISO "YYYY-MM-DD" */
+function diaDeFecha(iso){
+  const g=new Date(iso+"T00:00:00").getDay(); // 0=Domingo … 6=Sábado
+  return ALL_DAYS[(g+6)%7]||"Lunes";          // ALL_DAYS empieza en Lunes
+}
+/* Compara dos arrays de series campo por campo (w,r,rpe). Robusto ante orden de propiedades. */
+function mismosSets(a,b){
+  a=a||[];b=b||[];
+  if(a.length!==b.length)return false;
+  for(let i=0;i<a.length;i++){
+    const x=a[i]||{},y=b[i]||{};
+    if(String(x.w||"")!==String(y.w||""))return false;
+    if(String(x.r||"")!==String(y.r||""))return false;
+    if(String(x.rpe||"")!==String(y.rpe||""))return false;
+  }
+  return true;
+}
+
 function fmtDate(iso){const[y,m,d]=iso.split("-");return d+" "+MESES[+m-1]}
 function fmtDateFull(iso){const[y,m,d]=iso.split("-");return d+" "+MESES[+m-1]+" "+y}
 function epley(w,r){w=parseFloat(w)||0;r=parseFloat(r)||0;if(!w||!r)return 0;return Math.round(w*(1+r/30))}

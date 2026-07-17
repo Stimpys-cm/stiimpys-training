@@ -1,0 +1,122 @@
+/* ============================================================
+ *  MODO AMIGOS — pantalla invitado + Wrapped
+ * ============================================================ */
+/* ---- Shell del invitado (corre dentro de la app real) ---- */
+body.guest-mode #openOpts{display:none}                 /* sin menú de cuenta/plan */
+body.guest-mode #bnav [data-tab="prevencion"],
+body.guest-mode #bnav [data-tab="usuarios"]{display:none}
+body.guest-mode .foot{display:none}
+/* Un solo flujo para el invitado: registrar → Concluir → Wrapped */
+body.guest-mode #startSession,
+body.guest-mode .quick-modes{display:none}
+#guestBanner{display:flex;align-items:center;gap:8px;margin:0 0 4px;padding:9px 12px;
+  background:linear-gradient(160deg,rgba(77,184,255,.12),rgba(43,92,255,.04));
+  border:1px solid rgba(77,184,255,.28);border-radius:12px;font-size:.76rem;color:var(--sky)}
+#guestBanner b{color:var(--ink)}
+#guestBanner span{color:var(--dim)}
+#guestAccount{color:var(--sky)}
+
+/* El Wrapped es un overlay a pantalla completa SOLO al finalizar. Debajo de los
+   diálogos (z 130) pero encima del shell y la barra inferior. */
+#guestApp{position:fixed;inset:0;z-index:120;background:var(--bg);overflow-y:auto;
+  -webkit-overflow-scrolling:touch;display:none;padding:18px 16px 40px}
+#guestApp.show{display:block}
+
+.guest-head{margin:6px 0 18px}
+.guest-badge{display:inline-flex;align-items:center;gap:5px;font-size:.68rem;font-weight:800;
+  letter-spacing:.06em;color:var(--sky);background:rgba(77,184,255,.12);
+  border:1px solid rgba(77,184,255,.3);padding:4px 10px;border-radius:999px}
+.guest-title{font-size:1.5rem;font-weight:800;margin-top:10px}
+.guest-sub{font-size:.82rem;color:var(--dim);margin-top:3px}
+.ex-last.done-txt{color:var(--ok);font-weight:600}
+.guest-finish{width:100%;margin-top:6px;background:var(--blue);color:#fff;border:none;
+  border-radius:16px;padding:16px;font-size:1rem;font-weight:800;display:flex;
+  align-items:center;justify-content:center;gap:8px}
+.guest-note{font-size:.72rem;color:var(--dim);text-align:center;margin-top:14px;
+  display:flex;align-items:center;justify-content:center;gap:5px}
+
+/* Sheet del anfitrión */
+.amigo-hero{display:flex;gap:12px;align-items:flex-start;background:var(--card);
+  border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:14px}
+.amigo-ic{width:44px;height:44px;flex:0 0 auto;border-radius:12px;background:var(--blue-dim);
+  color:var(--sky);display:flex;align-items:center;justify-content:center}
+.amigo-hero b{display:block;font-size:.95rem}
+.amigo-hero small{display:block;color:var(--dim);font-size:.78rem;margin-top:3px;line-height:1.4}
+.amigo-preview{background:var(--card2);border:1px solid var(--line);border-radius:14px;
+  padding:12px 14px;margin-bottom:14px}
+.amigo-preview-h{font-size:.78rem;font-weight:800;color:var(--gold);margin-bottom:8px}
+.amigo-preview-ex{display:flex;justify-content:space-between;font-size:.85rem;padding:3px 0}
+.amigo-preview-ex em{color:var(--dim);font-style:normal}
+.amigo-link input{width:100%;background:var(--card);border:1px solid var(--line);color:var(--dim);
+  border-radius:12px;padding:11px 12px;font-size:.78rem}
+.amigo-fld{margin-bottom:12px}
+.amigo-fld label{display:flex;gap:5px;align-items:center;font-size:.74rem;font-weight:700;color:var(--dim);margin-bottom:6px}
+.amigo-fld label span{font-weight:500;opacity:.7}
+.amigo-fld textarea{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--ink);
+  border-radius:12px;padding:10px 12px;font-size:.85rem;font-family:inherit;resize:none}
+.amigo-fld textarea:focus{outline:none;border-color:var(--blue)}
+.amigo-expira{display:flex;gap:6px;align-items:center;font-size:.72rem;color:var(--dim);margin-top:8px}
+
+/* Tarjeta de mensaje del anfitrión (vista invitado) */
+#guestMsg{display:flex;gap:8px;align-items:flex-start;margin:0 0 8px;padding:10px 12px;
+  background:rgba(255,204,77,.08);border:1px solid rgba(255,204,77,.25);border-radius:12px;
+  font-size:.82rem;color:var(--gold)}
+#guestMsg b{color:var(--ink)}
+#guestMsg span{color:var(--ink)}
+
+/* Pantalla de enlace caducado */
+.guest-expired{max-width:340px;margin:22vh auto 0;text-align:center;color:var(--dim);padding:0 24px}
+.guest-expired .ge-t{font-size:1.3rem;font-weight:800;color:var(--ink);margin-top:14px}
+.guest-expired .ge-s{font-size:.9rem;margin-top:8px;line-height:1.5}
+.guest-expired b{color:var(--ink)}
+
+/* ---- Wrapped ---- */
+.wrap-scroll{padding:6px 2px 0}
+.wrap-card{background:#0d0d0d;border:1px solid var(--line);border-radius:22px;
+  padding:24px 20px;position:relative;overflow:hidden;
+  box-shadow:0 0 0 1px rgba(255,204,77,.10), 0 24px 60px rgba(0,0,0,.5)}
+.wrap-card::before{content:"";position:absolute;inset:0;border-radius:22px;padding:1px;
+  background:linear-gradient(140deg,rgba(77,184,255,.55),rgba(255,204,77,.4),rgba(255,84,112,.4));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.wrap-brand{font-size:.66rem;font-weight:800;letter-spacing:.18em;color:var(--dim)}
+.wrap-title2{font-size:1.7rem;font-weight:800;line-height:1.1;margin-top:10px}
+.wrap-date{font-size:.8rem;color:var(--dim);margin-top:4px}
+.wrap-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}
+.wrap-tile{background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:14px;
+  padding:14px 8px;text-align:center}
+.wrap-val{font-size:1.35rem;font-weight:800;font-variant-numeric:tabular-nums;color:var(--sky)}
+.wrap-lbl{font-size:.64rem;color:var(--dim);margin-top:4px;letter-spacing:.03em}
+.wrap-section{margin-top:18px}
+.wrap-section-h{display:flex;align-items:center;gap:6px;font-size:.74rem;font-weight:800;
+  letter-spacing:.05em;color:var(--gold);text-transform:uppercase;margin-bottom:10px}
+.wrap-pr{display:flex;justify-content:space-between;align-items:center;padding:8px 0;
+  border-bottom:1px solid rgba(255,255,255,.05);font-size:.9rem}
+.wrap-pr b{color:var(--gold);font-variant-numeric:tabular-nums}
+.wrap-table{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.wrap-exblock{margin-bottom:12px}
+.wrap-exname{font-size:.82rem;font-weight:700;display:flex;justify-content:space-between;
+  align-items:baseline;gap:8px;margin-bottom:4px;font-family:system-ui,sans-serif}
+.wrap-1rm{font-size:.66rem;color:var(--dim);font-weight:600;white-space:nowrap}
+.wrap-set{font-size:.8rem;color:#cfd2da;line-height:1.7;padding-left:2px}
+.wrap-rpe{color:var(--sky)}
+.wrap-foot{text-align:center;font-size:.66rem;color:var(--dim);margin-top:20px;
+  padding-top:14px;border-top:1px solid rgba(255,255,255,.05);letter-spacing:.04em}
+.wrap-actions{display:flex;flex-direction:column;gap:10px;margin-top:16px;padding:0 2px}
+.wrap-btn{width:100%;border-radius:14px;padding:14px;font-size:.92rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line)}
+.wrap-btn.wa{background:var(--ok);color:#04231b;border:none}
+.wrap-btn.img{background:var(--blue);color:#fff;border:none}
+.wrap-btn.pdf{background:var(--card2);color:var(--ink)}
+.wrap-btn.cta{background:linear-gradient(135deg,rgba(255,204,77,.16),rgba(255,204,77,.06));
+  border:1px solid rgba(255,204,77,.4);color:var(--gold)}
+.wrap-btn.ghost{background:none;color:var(--dim)}
+
+/* Impresión: solo la tarjeta (PDF limpio). El screenshot es directo. */
+@media print{
+  body>*{display:none!important}
+  #guestApp{display:block!important;position:static!important;padding:0!important;overflow:visible!important;background:#0d0d0d!important}
+  #guestApp .wrap-actions{display:none!important}
+  .wrap-scroll{padding:0!important}
+  .wrap-card{border-radius:0!important;box-shadow:none!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}

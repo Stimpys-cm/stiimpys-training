@@ -15,19 +15,23 @@ function resumenDia(iso){
   let vol=0,series=0,prs=[];
   allExercises().forEach(ex=>{
     const h=DB[ex.id]||[];
-    const e=h.find(x=>x.date===iso);
-    if(!e)return;
-    const v=volumen(e.sets);
-    vol+=v;
-    const ns=e.sets.filter(s=>s.w!==""||s.r!=="").length;
-    series+=ns;
-    const best=Math.max(0,...e.sets.map(s=>epley(s.w,s.r)));
-    // ¿fue PR en esa fecha?
-    const antes=h.filter(x=>x.date<iso);
-    const prevBest=antes.length?Math.max(0,...antes.map(x=>Math.max(0,...x.sets.map(s=>epley(s.w,s.r))))):0;
-    const esPR=best>prevBest&&prevBest>0;
-    if(esPR)prs.push({n:ex.name,v:best});
-    ejercicios.push({id:ex.id,name:ex.name,sets:e.sets,time:e.time,best,vol:v,esPR});
+    // Un ejercicio puede tener varios registros en la MISMA fecha (p.ej. registrado
+    // bajo distintos días de rutina). Los mostramos todos, no solo el primero.
+    const es=h.filter(x=>x.date===iso);
+    if(!es.length)return;
+    es.forEach(e=>{
+      const v=volumen(e.sets);
+      vol+=v;
+      const ns=e.sets.filter(s=>s.w!==""||s.r!=="").length;
+      series+=ns;
+      const best=Math.max(0,...e.sets.map(s=>epley(s.w,s.r)));
+      // ¿fue PR en esa fecha?
+      const antes=h.filter(x=>x.date<iso);
+      const prevBest=antes.length?Math.max(0,...antes.map(x=>Math.max(0,...x.sets.map(s=>epley(s.w,s.r))))):0;
+      const esPR=best>prevBest&&prevBest>0;
+      if(esPR)prs.push({n:ex.name,v:best});
+      ejercicios.push({id:ex.id,name:ex.name,day:e.day||"",sets:e.sets,time:e.time,best,vol:v,esPR});
+    });
   });
   const skip=getSkipDays().find(s=>s.date===iso);
   const feel=getFeels().find(f=>f.date===iso);
@@ -127,9 +131,9 @@ function verDia(iso){
     html+=`<div class="cdt-list">`;
     r.ejercicios.forEach(ex=>{
       const detalle=ex.sets.map(s=>`${s.w||"–"}${s.w?"×":""}${s.r||"–"}${s.rpe?" @"+s.rpe:""}`).join("  ·  ");
-      html+=`<div class="cdt-ex" data-edit="${ex.id}|${iso}">
+      html+=`<div class="cdt-ex" data-edit="${ex.id}|${iso}|${ex.day||""}">
         <div class="cdt-ex-top">
-          <div class="cdt-ex-n">${ex.name}${ex.esPR?`<span class="cdt-prtag">${ICON('flame',9)} PR</span>`:""}</div>
+          <div class="cdt-ex-n">${ex.name}${ex.day?` <span class="cdt-day">· ${ex.day}</span>`:""}${ex.esPR?`<span class="cdt-prtag">${ICON('flame',9)} PR</span>`:""}</div>
           <button class="cdt-editb">${ICON('edit',13)} Editar</button>
         </div>
         <div class="cdt-ex-d">${detalle}</div>
@@ -147,16 +151,19 @@ function verDia(iso){
   };
   el.querySelectorAll("[data-edit]").forEach(b=>{
     b.onclick=()=>{
-      const [exid,fecha]=b.dataset.edit.split("|");
-      editarRegistro(exid,fecha);
+      const [exid,fecha,dia]=b.dataset.edit.split("|");
+      editarRegistro(exid,fecha,dia);
     };
   });
 }
 
 /* EDITAR un registro existente (no crea uno nuevo) */
-function editarRegistro(id,iso){
+function editarRegistro(id,iso,dia){
   const h=DB[id]||[];
-  const e=h.find(x=>x.date===iso);
+  // Coincidir por fecha Y día de rutina, para no editar el registro equivocado
+  // cuando hay varios el mismo día.
+  const match=x=>x.date===iso&&(x.day||dia||"")===(dia||"");
+  const e=h.find(match);
   if(!e)return;
   const exObj=allExercises().find(x=>x.id===id);
   const nombre=exObj?exObj.name:"Ejercicio";
@@ -204,7 +211,7 @@ function editarRegistro(id,iso){
     document.getElementById("edSave").onclick=()=>{
       const clean=sets.filter(s=>s.w!==""||s.r!=="");
       if(!clean.length){flashMsg("Deja al menos una serie o usa Borrar");return}
-      const i=DB[id].findIndex(x=>x.date===iso);
+      const i=DB[id].findIndex(match);
       DB[id][i]={...DB[id][i],sets:clean.map(s=>({w:s.w,r:s.r,rpe:s.rpe||""}))};  // REEMPLAZA
       save(DB);
       closeSheet();
@@ -216,7 +223,7 @@ function editarRegistro(id,iso){
         msg:`Se eliminará ${nombre} del ${fmtDateFull(iso)}. No se puede deshacer.`,
         icon:"trash",danger:true,confirmText:"Borrar",cancelText:"Cancelar"});
       if(!ok)return;
-      DB[id]=DB[id].filter(x=>x.date!==iso);
+      DB[id]=DB[id].filter(x=>!match(x));
       if(!DB[id].length)delete DB[id];
       save(DB);
       closeSheet();

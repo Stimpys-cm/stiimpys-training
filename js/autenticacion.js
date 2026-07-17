@@ -3,6 +3,20 @@
  */
 const API_BASE = window.location.origin;  // mismo dominio (API en /api)
 
+/* Auto-cargador del módulo Modo Amigos: si el index.html no incluye sus archivos,
+   los cargamos aquí. Evita el fallo típico de "olvidé subir el index.html nuevo".
+   Si el <script> ya está en el index.html, no hace nada (no duplica). */
+(function cargarModoAmigos(){
+  if(!document.querySelector('script[src*="modo-amigos.js"]')){
+    var s=document.createElement("script"); s.src="js/modo-amigos.js"; s.defer=true;
+    document.head.appendChild(s);
+  }
+  if(!document.querySelector('link[href*="modo-amigos.css"]')){
+    var l=document.createElement("link"); l.rel="stylesheet"; l.href="css/modo-amigos.css";
+    document.head.appendChild(l);
+  }
+})();
+
 const AUTH_KEY="stimpys_auth";
 function getAuth(){try{return JSON.parse(localStorage.getItem(AUTH_KEY))}catch(e){return null}}
 function setAuth(a){a?localStorage.setItem(AUTH_KEY,JSON.stringify(a)):localStorage.removeItem(AUTH_KEY)}
@@ -73,6 +87,8 @@ const CLAVES_USUARIO=[
   "stimpys_ss_pos",        // posición en sesión guiada
   "stimpys_timer",         // temporizador
   "stimpys_cfg",           // configuración (plan, unidades...)
+  "stimpys_guest_workout", // datos de sesión invitado (Modo Amigos)
+  "stimpys_guest_meta",    // meta de sesión invitado
 ];
 function limpiarDatosLocales(){
   CLAVES_USUARIO.forEach(k=>localStorage.removeItem(k));
@@ -98,6 +114,10 @@ async function submitAuth(){
     }
     localStorage.setItem(ULTIMO_KEY,nuevoId);
     setAuth({token:res.token,name:res.name,email:res.email,id:res.id||null});
+    // Si venía en modo invitado, recargamos limpio: la app arranca como usuario
+    // normal (el guardado deja de apuntar a la clave aislada) y, tras el pull,
+    // importarInvitadoPendiente() fusiona lo que registró como invitado.
+    if(typeof GUEST_MODE!=="undefined" && GUEST_MODE){ location.reload(); return; }
     msg.className="auth-msg ok";msg.textContent="¡Listo! Cargando tus datos...";
     await pullData(); // trae datos de la nube
     hideAuth();
@@ -141,7 +161,9 @@ async function pullData(){
       });
     }
   }catch(e){/* sin conexión: se conserva el perfil local */}
+  if(typeof importarInvitadoPendiente==="function") importarInvitadoPendiente(); // fusiona datos de invitado (modo-amigos.js)
 }
+
 // Envía datos al backend (con debounce)
 let syncTimer=null;
 function paqueteDatos(){
@@ -218,4 +240,3 @@ document.addEventListener("visibilitychange",()=>{
   if(document.hidden)stopHeartbeat();
   else if(getAuth())startHeartbeat();
 });
-

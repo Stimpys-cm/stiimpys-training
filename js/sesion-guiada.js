@@ -303,10 +303,15 @@ function finishSession(){
 
 /* Cerrar sesión guiada: guarda lo escrito antes de salir */
 document.getElementById("ssClose").onclick=async()=>{
-  guardarBorradoresPendientes();
   const ok=await showDialog({title:"¿Salir de la sesión?",
     msg:"Todo lo que escribiste ya quedó guardado. Puedes retomarla cuando quieras.",
     icon:"close",confirmText:"Salir",cancelText:"Seguir"});
-  if(ok)closeSession();
+  if(!ok)return;
+  // Guardar en DB lo escrito y LUEGO limpiar los borradores: ya están persistidos,
+  // así renderEntreno lee el registro guardado en vez de un draft huérfano que
+  // tendría prioridad sobre él.
+  guardarBorradoresPendientes();
+  clearDrafts();
+  closeSession();
 };
 

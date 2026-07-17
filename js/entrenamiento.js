@@ -167,7 +167,7 @@ function refreshBadge(card,id){
     // vaciaste los campos de un registro que ya estaba guardado
     html=`<span class="ex-badge warn">${ICON('warn',12)} Vaciado · guarda para borrar</span>`;
     card.classList.remove("done-today");card.classList.add("has-draft");
-  }else if(dr.length&&(!guardado||JSON.stringify(dr.map(s=>[s.w,s.r,s.rpe]))!==JSON.stringify(guardado.sets.map(s=>[s.w,s.r,s.rpe||""])))){
+  }else if(dr.length&&(!guardado||!mismosSets(dr,guardado.sets))){
     // hay cambios sin guardar respecto a lo que está en la base
     html=`<span class="ex-badge draft">${ICON('save',12)} Sin guardar: ${badgeVal(dr,id)}</span>`;
     card.classList.add("has-draft");card.classList.remove("done-today");
@@ -249,7 +249,7 @@ function renderEntreno(){
       </div><div id="exList"></div>`;
   }else{
     if(!esHoy){
-      tabs+=`<div class="notice-day">${ICON('warn',15)}<div>Estás viendo <b>${activeDay}</b>, no el día de hoy. Puedes registrar igual, pero se guardará con la fecha de hoy.</div></div>`;
+      tabs+=`<div class="notice-day">${ICON('warn',15)}<div>Estás viendo <b>${activeDay}</b>, no el día de hoy (<b>${hoy}</b>). Si registras algo, quedará como sesión de <b>${activeDay}</b> pero con la fecha de hoy (${new Date().getDate()}/${new Date().getMonth()+1}).</div></div>`;
     }
     tabs+=`<button class="start-session" id="startSession">${ICON('play2',20)}<span>Iniciar sesión guiada</span><small>${dayLabel}</small></button>
       <div class="quick-modes">
@@ -286,7 +286,7 @@ function renderEntreno(){
     const tieneDraft=Object.prototype.hasOwnProperty.call(draftsHoy,dkey);
     const dr=(draftsHoy[dkey]||[]).filter(s=>s.w!==""||s.r!=="");
     const vaciado=tieneDraft&&!dr.length&&hoy;   // borró un registro ya guardado
-    const cambiado=dr.length&&hoy&&JSON.stringify(dr.map(s=>[s.w,s.r,s.rpe]))!==JSON.stringify(hoy.sets.map(s=>[s.w,s.r,s.rpe||""]));
+    const cambiado=dr.length&&hoy&&!mismosSets(dr,hoy.sets);
     const isSkip=skipped.includes(id);
     let badge="";
     if(isSkip){badge=`<span class="ex-badge skip">${ICON('close',12)} Saltado</span>`;skipCount++}
@@ -695,6 +695,7 @@ function showMenu(){
       <button id="mPlan"><span class="ic">${ICON('dumbbell',22)}</span><div>Cambiar plan de entrenamiento<small>${planActual().nombre} · ${planActual().nivel}</small></div></button>
       <button id="mWeekend"><span class="ic">${ICON('calendar',22)}</span><div>Fin de semana<small>${CFG.weekend?"Sábado y domingo visibles":"Solo Lunes a Viernes"}</small></div></button>
       <button id="mRest"><span class="ic">${ICON('clock',22)}</span><div>Descansos entre series<small>Por defecto 3:00 · editable por ejercicio</small></div></button>
+      <button id="mAmigo"><span class="ic">${ICON('users',22)}</span><div>Modo Amigos<small>Comparte tu rutina de hoy con un enlace</small></div></button>
       <button id="mCal"><span class="ic">${ICON('calendar',22)}</span><div>Calendario<small>Ver y editar lo que registraste cada día</small></div></button>
       <button id="mPerfil"><span class="ic">${ICON('users',22)}</span><div>Mi perfil<small>Foto, sobre mí, insignias y vitrinas</small></div></button>
       <button id="mProg"><span class="ic">${ICON('list',22)}</span><div>Ver todo mi historial<small>Pesos, RPE, fechas y horas de cada ejercicio</small></div></button>
@@ -707,6 +708,10 @@ function showMenu(){
   document.getElementById("mPlan").onclick=showPlanes;
   document.getElementById("mWeekend").onclick=()=>{CFG.weekend=!CFG.weekend;saveCfg(CFG);renderEntreno();showMenu()};
   document.getElementById("mRest").onclick=showDescansos;
+  document.getElementById("mAmigo").onclick=()=>{
+    if(typeof abrirModoAmigos==="function")abrirModoAmigos();
+    else alertDlg("No se cargó modo-amigos.js. Sube ese archivo y el index.html actualizado.",{title:"Modo Amigos no disponible",icon:"warn"});
+  };
   document.getElementById("mCal").onclick=()=>{closeSheet();abrirCalendario()};
   document.getElementById("mPerfil").onclick=()=>{closeSheet();abrirPerfil()};
   document.getElementById("mProg").onclick=showHistorial;

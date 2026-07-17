@@ -32,6 +32,24 @@ function exId(ex){return "ex:"+normEx(typeof ex==="string"?ex:(ex&&ex.n)||"")}
   CFG.migratedV2=true;saveCfg(CFG);
 })();
 
+// Migración V3: registros antiguos no tienen el campo `day`. Se lo asignamos
+// infiriéndolo del día de la semana de su fecha (los registros viejos siempre
+// se creaban el mismo día en que se entrenaba, así que el día de la semana
+// coincide con el día de rutina en que se registró).
+(function migrarDayEnRegistros(){
+  if(CFG.migratedV3)return;
+  let changed=false;
+  Object.keys(DB).forEach(id=>{
+    const hist=DB[id];
+    if(!Array.isArray(hist))return;
+    hist.forEach(e=>{
+      if(e&&e.date&&!e.day){e.day=diaDeFecha(e.date);changed=true}
+    });
+  });
+  if(changed)save(DB);
+  CFG.migratedV3=true;saveCfg(CFG);
+})();
+
 function getSkipped(){try{const o=JSON.parse(localStorage.getItem("stimpys_skip"))||{};return o.date===nowStamp().iso?(o.ids||[]):[]}catch(e){return[]}}
 function setSkipped(ids){localStorage.setItem("stimpys_skip",JSON.stringify({date:nowStamp().iso,ids}))}
 
