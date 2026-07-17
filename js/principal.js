@@ -13,23 +13,37 @@ document.addEventListener("touchstart",()=>{const c=initAudio();if(c&&c.state===
 document.addEventListener("click",()=>{const c=initAudio();if(c&&c.state==="suspended")c.resume()},{once:true});
 
 /* ============ NAVEGACION INFERIOR ============ */
+// Cada pestaña es su propia PANTALLA, con nombre e identidad propia en el header.
+const SCREENS={
+  entreno:{n:"Entreno",tag:"Tu sesión de hoy"},
+  progreso:{n:"Progreso",tag:"Fuerza, volumen y récords"},
+  diccionario:{n:"Diccionario",tag:"Técnica de cada ejercicio"},
+  prevencion:{n:"Prevención",tag:"Cuida tus articulaciones"},
+  usuarios:{n:"Usuarios",tag:"La comunidad Stimpys"},
+};
+function irAPantalla(t){
+  document.querySelectorAll("#bnav button").forEach(x=>x.classList.toggle("active",x.dataset.tab===t));
+  ["entreno","progreso","diccionario","prevencion","usuarios"].forEach(name=>{
+    const el=document.getElementById("tab-"+name);
+    const show=name===t;
+    el.classList.toggle("hidden",!show);
+    if(show){el.style.animation="none";void el.offsetWidth;el.style.animation=""}
+  });
+  // Identidad de la pantalla en el header (salvo en modo invitado, que lo gestiona el shell)
+  const sc=SCREENS[t];
+  if(sc && !document.body.classList.contains("guest-mode")){
+    const tag=document.querySelector("header .tag");
+    if(tag)tag.textContent=sc.n+" · "+sc.tag;
+    document.body.dataset.screen=t;
+  }
+  if(navigator.vibrate)navigator.vibrate(8);
+  if(t==="progreso")renderProgreso();
+  if(t==="diccionario")renderDiccionario();
+  if(t==="prevencion")renderPrevencion();
+  if(t==="usuarios")renderUsuarios();
+}
 document.querySelectorAll("#bnav button").forEach(b=>{
-  b.onclick=()=>{
-    document.querySelectorAll("#bnav button").forEach(x=>x.classList.remove("active"));
-    b.classList.add("active");
-    const t=b.dataset.tab;
-    ["entreno","progreso","diccionario","prevencion","usuarios"].forEach(name=>{
-      const el=document.getElementById("tab-"+name);
-      const show=name===t;
-      el.classList.toggle("hidden",!show);
-      if(show){el.style.animation="none";void el.offsetWidth;el.style.animation=""}
-    });
-    if(navigator.vibrate)navigator.vibrate(8);
-    if(t==="progreso")renderProgreso();
-    if(t==="diccionario")renderDiccionario();
-    if(t==="prevencion")renderPrevencion();
-    if(t==="usuarios")renderUsuarios();
-  };
+  b.onclick=()=>irAPantalla(b.dataset.tab);
 });
 
 /* ============ TAB ENTRENO ============ */
@@ -81,6 +95,8 @@ document.querySelectorAll(".plate-units .pu").forEach(btn=>btn.onclick=()=>{
 /* ============ ARRANQUE ============ */
 paintStaticIcons();
 renderEntreno();
+// pantalla inicial: Entreno
+(function(){const tag=document.querySelector("header .tag");if(tag&&!document.body.classList.contains("guest-mode"))tag.textContent="Entreno · Tu sesión de hoy";document.body.dataset.screen="entreno";})();
 // inicializar logros ya obtenidos sin disparar confetti la primera carga
 if(getSeen().length===0){setSeen(logrosDesbloqueados().map(l=>l.id))}
 // Arranque: tras el splash, decidir auth o app

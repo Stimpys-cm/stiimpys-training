@@ -341,20 +341,35 @@ const SUSTITUTOS={
   "elevaciones laterales":["Press Militar con barra","Press Arnold","Pájaros en polea"],
   "prensa ":["Sentadilla con barra","Zancadas con mancuernas"],
 };
-function sustitutosDe(nombre){
+function sustitutosDe(nombre,limite){
+  limite=limite||6;
   const n=normEx(nombre);
-  if(SUSTITUTOS[n])return SUSTITUTOS[n];
   const M=musculosDe(nombre);
   const prim=Object.entries(M).filter(([m,w])=>w>=1).map(([m])=>m);
-  if(!prim.length)return [];
+  // 1) suplentes curados a mano (los mejores primero)
+  const curados=(SUSTITUTOS[n]||[]).filter(x=>normEx(x)!==n);
+  // 2) candidatos de la librería que comparten músculo primario, puntuados
+  const info=ejPorNombre(nombre);
+  const grupo=info?info.g:null;
   const cands=[];
   DICC.forEach(d=>{
     if(normEx(d.n)===n)return;
+    if(curados.some(c=>normEx(c)===normEx(d.n)))return; // ya está en curados
     const dm=musculosDe(d.n);
     const dprim=Object.entries(dm).filter(([m,w])=>w>=1).map(([m])=>m);
-    if(dprim.some(m=>prim.includes(m)))cands.push(d.n);
+    const comparte=dprim.filter(m=>prim.includes(m)).length;
+    if(!comparte)return;
+    // puntaje: más músculos compartidos y mismo grupo = mejor
+    let score=comparte*2;
+    if(grupo&&d.g===grupo)score+=3;
+    cands.push({n:d.n,score});
   });
-  return cands.slice(0,4);
+  cands.sort((a,b)=>b.score-a.score);
+  const auto=cands.map(c=>c.n);
+  // combinar sin duplicar, curados primero
+  const out=[];
+  [...curados,...auto].forEach(x=>{if(!out.some(o=>normEx(o)===normEx(x)))out.push(x)});
+  return out.slice(0,limite);
 }
 const SUBS_KEY="stimpys_subs";
 function getSubs(){try{const o=JSON.parse(localStorage.getItem(SUBS_KEY))||{};

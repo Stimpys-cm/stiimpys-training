@@ -551,6 +551,16 @@ function buildBody(card,id,ex){
     ta.oninput=()=>setNota(id,ta.value);
     body.appendChild(noteWrap);
 
+    // cambiar ejercicio temporalmente (solo hoy)
+    const swap=document.createElement("button");swap.className="btn-swap";
+    const origName=ex._orig||ex.n;
+    const swapped=ex._sub;
+    swap.innerHTML=swapped
+      ? `${ICON('back',14)} Cambiaste <b>${escapeHtml(origName)}</b> → <b>${escapeHtml(ex.n)}</b> · toca para editar`
+      : `${ICON('dumbbell',14)} Cambiar este ejercicio hoy`;
+    swap.onclick=()=>cambiarEjercicioHoy(ex);
+    body.appendChild(swap);
+
     // saltar ejercicio
     const skip=document.createElement("button");skip.className="btn-skip";
     const isSkipped=(getSkipped().includes(id));
@@ -696,6 +706,7 @@ function showMenu(){
       <button id="mWeekend"><span class="ic">${ICON('calendar',22)}</span><div>Fin de semana<small>${CFG.weekend?"Sábado y domingo visibles":"Solo Lunes a Viernes"}</small></div></button>
       <button id="mRest"><span class="ic">${ICON('clock',22)}</span><div>Descansos entre series<small>Por defecto 3:00 · editable por ejercicio</small></div></button>
       <button id="mAmigo"><span class="ic">${ICON('users',22)}</span><div>Modo Amigos<small>Comparte tu rutina de hoy con un enlace</small></div></button>
+      <button id="mSemana"><span class="ic">${ICON('share',22)}</span><div>Resumen semanal<small>Comparte tu semana: versión pública y privada</small></div></button>
       <button id="mCal"><span class="ic">${ICON('calendar',22)}</span><div>Calendario<small>Ver y editar lo que registraste cada día</small></div></button>
       <button id="mPerfil"><span class="ic">${ICON('users',22)}</span><div>Mi perfil<small>Foto, sobre mí, insignias y vitrinas</small></div></button>
       <button id="mProg"><span class="ic">${ICON('list',22)}</span><div>Ver todo mi historial<small>Pesos, RPE, fechas y horas de cada ejercicio</small></div></button>
@@ -711,6 +722,10 @@ function showMenu(){
   document.getElementById("mAmigo").onclick=()=>{
     if(typeof abrirModoAmigos==="function")abrirModoAmigos();
     else alertDlg("No se cargó modo-amigos.js. Sube ese archivo y el index.html actualizado.",{title:"Modo Amigos no disponible",icon:"warn"});
+  };
+  document.getElementById("mSemana").onclick=()=>{
+    if(typeof abrirResumenSemanal==="function"){closeSheet();abrirResumenSemanal()}
+    else alertDlg("No se cargó resumen-semanal.js.",{title:"No disponible",icon:"warn"});
   };
   document.getElementById("mCal").onclick=()=>{closeSheet();abrirCalendario()};
   document.getElementById("mPerfil").onclick=()=>{closeSheet();abrirPerfil()};
@@ -881,34 +896,93 @@ document.getElementById("importFile").onchange=e=>{
 
 
 
+/* Grupo muscular principal de un ejercicio (para filtrar el selector) */
+function grupoPrincipal(nombre){
+  const info=ejPorNombre(nombre);
+  if(info&&GRUPOS.includes(info.g))return info.g;
+  const M=musculosDe(nombre);
+  const prim=Object.entries(M).filter(([m,w])=>w>=1).sort((a,b)=>b[1]-a[1])[0];
+  const map={Cuádriceps:"Cuádriceps",Femoral:"Femoral",Glúteo:"Glúteo",Gemelo:"Gemelo"};
+  if(prim){const g=map[prim[0]]||prim[0];if(GRUPOS.includes(g))return g;}
+  return null;
+}
+
 function abrirGymLleno(){
   const sem=rutinaSemana();
-  const dayEx=(sem[activeDay]&&sem[activeDay].ex)||[];
+  const baseEx=(sem[activeDay]&&sem[activeDay].ex)||[];   // ejercicios ORIGINALES del día
   const subs=getSubs();
   sheetTitle.textContent="Gym lleno";
-  let html=`<div class="busy-hint">${ICON('bolt',14)} Elige una alternativa si la máquina está ocupada. Solo aplica hoy.</div><div class="busy-list">`;
-  dayEx.forEach(ex=>{
+  let html=`<div class="busy-hint">${ICON('bolt',14)} ¿Máquina ocupada o molestia? Cambia el ejercicio por un suplente que trabaja el mismo músculo. Solo aplica hoy.</div><div class="busy-list">`;
+  baseEx.forEach(ex=>{
     const id=exId(ex);
     const alt=sustitutosDe(ex.n);
     const actual=subs[id];
+    const grupo=grupoPrincipal(ex.n)||"";
     html+=`<div class="busy-row${actual?" changed":""}">
-      <div class="busy-name">${actual?`<s>${ex.n}</s> → <b>${actual}</b>`:ex.n}</div>
+      <div class="busy-name">${actual?`<s>${escapeHtml(ex.n)}</s> → <b>${escapeHtml(actual)}</b>`:escapeHtml(ex.n)}${grupo?`<span class="busy-mus">${grupo}</span>`:""}</div>
       <div class="busy-alts">
-        ${alt.length?alt.map(a=>`<button class="balt${actual===a?" on":""}" data-id="${id}" data-a="${a}">${a}</button>`).join(""):`<span class="busy-none">Sin alternativas</span>`}
+        ${alt.length?alt.map(a=>`<button class="balt${actual===a?" on":""}" data-id="${id}" data-a="${escapeHtml(a)}">${escapeHtml(a)}</button>`).join(""):`<span class="busy-none">Sin suplentes automáticos</span>`}
+        <button class="balt pick" data-pick="${id}" data-orig="${escapeHtml(ex.n)}" data-grp="${escapeHtml(grupo)}">${ICON('dumbbell',12)} Elegir otro…</button>
         ${actual?`<button class="balt undo" data-id="${id}" data-a="">${ICON('back',12)} Original</button>`:""}
       </div></div>`;
   });
   html+=`</div><button class="btn btn-add" id="resetSubs" style="width:100%;margin-top:14px">${ICON('back',15)} Restaurar todos</button>`;
   sheetBody.innerHTML=html;
-  sheetBody.querySelectorAll(".balt").forEach(b=>b.onclick=()=>{
+  sheetBody.querySelectorAll(".balt[data-a],.balt.undo").forEach(b=>b.onclick=()=>{
     setSub(b.dataset.id,b.dataset.a||null);
     renderEntreno();
     flashMsg(b.dataset.a?"Cambiado a "+b.dataset.a:"Restaurado");
     abrirGymLleno();
   });
+  sheetBody.querySelectorAll(".balt.pick").forEach(b=>b.onclick=()=>{
+    const id=b.dataset.pick, orig=b.dataset.orig, grp=b.dataset.grp;
+    elegirEjercicio({
+      titulo:"Cambiar "+orig,
+      grupo:grp||null,
+      onPick:(nombre)=>{
+        setSub(id,normEx(nombre)===normEx(orig)?null:nombre);
+        renderEntreno();
+        flashMsg("Cambiado a "+nombre);
+        abrirGymLleno();
+      }
+    });
+  });
   document.getElementById("resetSubs").onclick=()=>{
     clearSubs();renderEntreno();closeSheet();flashMsg("Rutina original restaurada");
   };
+  openSheet();
+}
+
+/* Cambiar un ejercicio SOLO por hoy, desde la tarjeta del ejercicio */
+function cambiarEjercicioHoy(ex){
+  const origName=ex._orig||ex.n;
+  const id=exId(origName);            // el sub siempre se indexa por el ejercicio ORIGINAL
+  const grupo=grupoPrincipal(origName)||"";
+  const alt=sustitutosDe(origName);
+  const subs=getSubs();
+  const actual=subs[id];
+  sheetTitle.textContent="Cambiar ejercicio hoy";
+  let html=`<div class="busy-hint">${ICON('dumbbell',14)} Cambia <b>${escapeHtml(origName)}</b> por otro que trabaje ${grupo?"<b>"+escapeHtml(grupo)+"</b>":"el mismo músculo"}. Solo por hoy; mañana vuelve tu rutina.</div>`;
+  if(actual){
+    html+=`<div class="swap-cur">${ICON('check',13)} Ahora estás haciendo <b>${escapeHtml(actual)}</b></div>`;
+  }
+  html+=`<div class="busy-alts swap-alts">`;
+  html+=alt.length?alt.map(a=>`<button class="balt${actual===a?" on":""}" data-a="${escapeHtml(a)}">${escapeHtml(a)}</button>`).join(""):`<span class="busy-none">Sin suplentes automáticos</span>`;
+  html+=`</div>
+    <button class="btn btn-save" id="swapPick" style="width:100%;margin-top:12px">${ICON('book',15)} Elegir de la librería…</button>
+    ${actual?`<button class="btn btn-add" id="swapUndo" style="width:100%;margin-top:10px">${ICON('back',15)} Restaurar ${escapeHtml(origName)}</button>`:""}`;
+  sheetBody.innerHTML=html;
+  sheetBody.querySelectorAll(".swap-alts .balt[data-a]").forEach(b=>b.onclick=()=>{
+    setSub(id,b.dataset.a);closeSheet();renderEntreno();flashMsg("Cambiado a "+b.dataset.a);
+  });
+  document.getElementById("swapPick").onclick=()=>{
+    elegirEjercicio({titulo:"Cambiar "+origName,grupo:grupo||null,onPick:(nombre)=>{
+      setSub(id,normEx(nombre)===normEx(origName)?null:nombre);
+      renderEntreno();flashMsg("Cambiado a "+nombre);
+    }});
+  };
+  const su=document.getElementById("swapUndo");
+  if(su)su.onclick=()=>{setSub(id,null);closeSheet();renderEntreno();flashMsg("Restaurado")};
   openSheet();
 }
 
@@ -1051,16 +1125,33 @@ function pintarEditorRutina(){
   document.getElementById("rutAdd").onclick=abrirSelectorEj;
 }
 
-/* Selector de ejercicios (de la librería) */
+/* Selector de ejercicios (de la librería) — reutilizable */
 let selQ="",selG="Todos",selE="Todo";
+// Cuando está definido, al elegir un ejercicio se llama a este callback en vez
+// de añadirlo a la rutina que se edita. Sirve para "cambiar ejercicio de hoy".
+let ejPickOnPick=null;
 function abrirSelectorEj(){
+  ejPickOnPick=null;
   selQ="";selG="Todos";selE="Todo";
+  const t=document.querySelector("#ejPicker .ejp-head h2");if(t)t.textContent="Añadir ejercicio";
+  document.getElementById("ejPicker").classList.add("show");
+  pintarSelector();
+  setTimeout(()=>{const s=document.getElementById("ejSearch");if(s)s.focus()},250);
+}
+/* Abre el selector para ELEGIR un ejercicio y devolverlo por callback.
+   opts: {titulo, grupo, onPick} — grupo pre-filtra por músculo. */
+function elegirEjercicio(opts){
+  opts=opts||{};
+  ejPickOnPick=opts.onPick||null;
+  selQ="";selG=(opts.grupo&&GRUPOS.includes(opts.grupo))?opts.grupo:"Todos";selE="Todo";
+  const t=document.querySelector("#ejPicker .ejp-head h2");if(t)t.textContent=opts.titulo||"Elegir ejercicio";
   document.getElementById("ejPicker").classList.add("show");
   pintarSelector();
   setTimeout(()=>{const s=document.getElementById("ejSearch");if(s)s.focus()},250);
 }
 function cerrarSelectorEj(){
   document.getElementById("ejPicker").classList.remove("show");
+  ejPickOnPick=null;
 }
 function pintarSelector(){
   const wrap=document.getElementById("ejPickBody");
@@ -1093,6 +1184,14 @@ function pintarSelector(){
   wrap.querySelectorAll(".chips .chip[data-e]").forEach(c=>c.onclick=()=>{selE=c.dataset.e;pintarSelector()});
   wrap.querySelectorAll(".ej-item").forEach(b=>b.onclick=()=>{
     const nombre=b.dataset.n;
+    // Modo "elegir y devolver" (cambiar ejercicio de hoy, gym lleno manual…)
+    if(ejPickOnPick){
+      const cb=ejPickOnPick;
+      cerrarSelectorEj();
+      cb(nombre);
+      if(navigator.vibrate)navigator.vibrate(15);
+      return;
+    }
     const info=ejPorNombre(nombre);
     if(!edRutina.semana[edDia])edRutina.semana[edDia]={label:"",ex:[]};
     const dia=edRutina.semana[edDia];

@@ -256,23 +256,155 @@ const EJS=[
   {n:"Man Maker",g:"Cuerpo completo",e:"Mancuernas",m:"Cuerpo completo",t:"c"},
   {n:"Clean con Mancuernas",g:"Cuerpo completo",e:"Mancuernas",m:"Cuerpo completo",t:"c"},
   {n:"Snatch con Kettlebell",g:"Cuerpo completo",e:"Kettlebell",m:"Cuerpo completo",t:"c"},
-  {n:"Wall Ball",g:"Cuerpo completo",e:"Cardio",m:"Pierna, hombro, cardiovascular",t:"c"}
+  {n:"Wall Ball",g:"Cuerpo completo",e:"Cardio",m:"Pierna, hombro, cardiovascular",t:"c"},
+  /* ---- Añadidos ---- */
+  {n:"Press de Banca con Barra (Pausa)",g:"Pecho",e:"Barra",m:"Pectoral mayor, tríceps",t:"c"},
+  {n:"Aperturas en Máquina de Pie",g:"Pecho",e:"Máquina",m:"Pectoral mayor",t:"a"},
+  {n:"Press Inclinado en Polea",g:"Pecho",e:"Polea",m:"Pectoral superior",t:"c"},
+  {n:"Remo con Barra T con Apoyo",g:"Espalda",e:"Máquina",m:"Dorsal, trapecio medio",t:"c"},
+  {n:"Jalón al Pecho en Máquina",g:"Espalda",e:"Máquina",m:"Dorsal ancho, bíceps",t:"c"},
+  {n:"Remo Sentado en Máquina (Agarre Neutro)",g:"Espalda",e:"Máquina",m:"Dorsal, romboides",t:"c"},
+  {n:"Pull-Over con Barra",g:"Espalda",e:"Barra",m:"Dorsal ancho, serrato",t:"a"},
+  {n:"Press Militar en Máquina Hammer",g:"Hombro",e:"Máquina",m:"Deltoide anterior, tríceps",t:"c"},
+  {n:"Elevación Lateral en Polea Baja Unilateral",g:"Hombro",e:"Polea",m:"Deltoide medio",t:"a"},
+  {n:"Curl de Bíceps en Banco Inclinado (Cabeza Larga)",g:"Bíceps",e:"Mancuernas",m:"Bíceps cabeza larga",t:"a"},
+  {n:"Curl Predicador en Polea",g:"Bíceps",e:"Polea",m:"Bíceps",t:"a"},
+  {n:"Extensión de Tríceps a una Mano (Cuerda)",g:"Tríceps",e:"Polea",m:"Tríceps",t:"a"},
+  {n:"Sentadilla Búlgara con Barra en Smith",g:"Cuádriceps",e:"Smith",m:"Cuádriceps, glúteo",t:"c"},
+  {n:"Extensión de Cuádriceps Unilateral",g:"Cuádriceps",e:"Máquina",m:"Cuádriceps",t:"a"},
+  {n:"Peso Muerto Rumano en Smith",g:"Femoral",e:"Smith",m:"Femoral, glúteo",t:"c"},
+  {n:"Patada de Glúteo con Banda",g:"Glúteo",e:"Banda",m:"Glúteo mayor",t:"a"},
+  {n:"Elevación de Talones en Máquina Sentado (Sóleo)",g:"Gemelo",e:"Máquina",m:"Sóleo",t:"a"},
+  {n:"Crunch con Peso en Máquina",g:"Core",e:"Máquina",m:"Recto abdominal",t:"a"},
+  {n:"Plancha con Peso",g:"Core",e:"Disco",m:"Core completo",t:"a"}
 ];
 const GRUPOS=["Pecho","Espalda","Hombro","Bíceps","Tríceps","Cuádriceps","Femoral","Glúteo","Gemelo","Core","Antebrazo","Cardio","Cuerpo completo"];
 const EQUIPOS=["Barra","Mancuernas","Máquina","Polea","Peso corporal","Kettlebell","Banda","Smith","Disco","Cardio"];
+
+/* ============================================================
+ *  BÚSQUEDA TOLERANTE + VARIANTES DE NOMBRES
+ * ============================================================
+ *  Un mismo ejercicio se conoce con distintos nombres. Aquí
+ *  mapeamos apodos/sinónimos → nombre canónico para que el
+ *  buscador entienda aunque no escribas el nombre exacto.
+ */
+const ALIAS_EJ={
+  "Press de Banca con Barra":["press banca","bench","bench press","press pecho barra","press de pecho"],
+  "Press de Banca Inclinado con Barra":["press inclinado barra","incline bench","inclinado barra"],
+  "Press de Banca con Mancuernas":["press banca mancuernas","press pecho mancuernas","db bench","aperturas no"],
+  "Press Inclinado con Mancuernas":["press inclinado mancuernas","incline db","inclinado con mancuernas"],
+  "Aperturas con Mancuernas":["fly","flyes","aperturas","aberturas","volador"],
+  "Pec-Fly (Peck Deck)":["pec deck","peck deck","pecdeck","contractor","mariposa","fly maquina","pec fly"],
+  "Aperturas en Polea (Cruces)":["cruces","crossover","cruce de poleas","cables cruzados","aperturas polea"],
+  "Fondos en Paralelas (Pecho)":["fondos","dips","paralelas"],
+  "Flexiones":["push up","push-ups","lagartijas","planchas de brazos","pushups"],
+  "Peso Muerto Convencional":["deadlift","peso muerto","pm","muerto"],
+  "Peso Muerto Sumo":["sumo deadlift","muerto sumo"],
+  "Dominadas (Pronación)":["dominadas","pull up","pull-ups","pullups","dominada pronada"],
+  "Dominadas Supinas (Chin-ups)":["chin up","chin-ups","dominadas supinas","dominada supina"],
+  "Jalón al Pecho (Agarre Abierto)":["jalon","jalón","jalon al pecho","lat pulldown","pulldown","polea al pecho","jalon abierto"],
+  "Remo con Barra":["remo barra","barbell row","remo pendlay no","remo t no"],
+  "Remo con Mancuerna a una Mano":["remo mancuerna","remo unilateral","one arm row","serrucho"],
+  "Remo en Polea Baja (Sentado)":["remo polea","remo sentado","seated row","remo bajo","remo en polea"],
+  "Remo en T (T-Bar)":["remo t","t-bar","tbar row","remo en t"],
+  "Face Pull":["facepull","face-pull","jalon a la cara","tiron a la cara"],
+  "Encogimientos con Mancuernas":["encogimientos","shrugs","trapecios","encogimiento hombros"],
+  "Press Militar con Barra (De Pie)":["press militar","military press","ohp","overhead press","press hombro barra"],
+  "Press de Hombro con Mancuernas":["press hombro mancuernas","shoulder press","press hombros","press militar mancuernas"],
+  "Press Arnold":["arnold","press arnold"],
+  "Elevaciones Laterales con Mancuernas":["elevaciones laterales","laterales","lateral raise","vuelos laterales","elevacion lateral"],
+  "Elevaciones Frontales con Mancuernas":["elevaciones frontales","front raise","frontales"],
+  "Pájaros con Mancuernas":["pajaros","pájaros","reverse fly","vuelos posteriores","deltoide posterior"],
+  "Remo al Mentón":["remo menton","remo al menton","upright row","jalon al menton"],
+  "Curl con Barra":["curl barra","barbell curl","curl biceps barra","biceps barra"],
+  "Curl con Mancuernas":["curl mancuernas","curl biceps","db curl","biceps mancuernas"],
+  "Curl Martillo":["martillo","hammer curl","curl martillo","hammer"],
+  "Curl Predicador (Scott) con Barra":["predicador","scott curl","banco scott","curl predicador","preacher curl"],
+  "Curl Concentrado":["concentrado","concentration curl"],
+  "Extensión de Tríceps en Polea (Cuerda)":["extension triceps","triceps polea","pushdown","jalon triceps","triceps cuerda","extension de triceps"],
+  "Press Francés con Barra":["press frances","frances","skull crusher","rompecraneos","skullcrusher"],
+  "Extensión Tras Nuca con Mancuerna":["tras nuca","extension tras nuca","triceps tras nuca","overhead triceps","frances tras nuca"],
+  "Press Cerrado en Banca":["press cerrado","close grip","agarre cerrado banca"],
+  "Patada de Tríceps con Mancuerna":["patada triceps","kickback","patadas de triceps"],
+  "Sentadilla con Barra (Trasera)":["sentadilla","squat","back squat","sentadilla trasera","sentadillas"],
+  "Sentadilla Frontal":["front squat","sentadilla frontal","frontal"],
+  "Sentadilla Goblet":["goblet","goblet squat","sentadilla copa"],
+  "Sentadilla Búlgara":["bulgara","búlgara","bulgarian","split squat","zancada bulgara","sentadilla bulgara"],
+  "Sentadilla Hack":["hack squat","hack","sentadilla hack"],
+  "Prensa de Piernas (45°)":["prensa","leg press","prensa de piernas","prensa 45"],
+  "Extensión de Rodilla (Cuádriceps)":["extension de rodilla","leg extension","cuadriceps maquina","extensiones de cuadriceps","extension cuadriceps","silla de cuadriceps"],
+  "Zancadas con Mancuernas":["zancadas","lunges","desplantes","estocadas","zancada"],
+  "Curl Femoral Tumbado":["curl femoral","femoral","leg curl","curl de femoral","isquios maquina","femoral tumbado"],
+  "Curl Femoral Sentado":["femoral sentado","seated leg curl","curl femoral sentado"],
+  "Peso Muerto Rumano con Barra":["peso muerto rumano","rumano","rdl","romanian deadlift","muerto rumano"],
+  "Hip Thrust con Barra":["hip thrust","empuje de cadera","puente de cadera con barra"],
+  "Abductores en Máquina":["abductores","abductor","abduccion","hip abduction"],
+  "Aductores en Máquina":["aductores","aductor","aduccion","hip adduction"],
+  "Elevación de Talones de Pie":["gemelos","pantorrillas","calf raise","elevacion de talones","talones","calves"],
+  "Plancha":["plank","plancha abdominal","plancha isometrica"],
+  "Crunch Abdominal":["crunch","abdominales","crunches","encogimiento abdominal"],
+  "Elevación de Piernas Colgado":["elevacion de piernas","hanging leg raise","leg raise","piernas colgado"],
+  "Russian Twist":["russian twist","giro ruso","twist ruso","oblicuos giro"],
+  "Rueda Abdominal (Ab Wheel)":["ab wheel","rueda abdominal","ab roller","rueda"],
+  "Elíptica":["eliptica","elliptical"],
+  "Bicicleta Estática":["bici","bicicleta","spinning","bicicleta estatica"],
+  "Caminata en Cinta":["caminadora","cinta","treadmill","caminar","trotadora"],
+};
+/* Índice inverso: término normalizado (sin acentos) → nombre canónico */
+const ALIAS_INDEX=(function(){
+  const idx={};
+  Object.entries(ALIAS_EJ).forEach(([canon,arr])=>{
+    arr.forEach(a=>{idx[stripAcc(a)]=canon});
+  });
+  return idx;
+})();
+
+/* Quita acentos y baja a minúsculas: "Jalón" → "jalon" */
+function stripAcc(s){
+  return (s||"").toString().toLowerCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g,"")
+    .replace(/\s+/g," ").trim();
+}
+/* Texto buscable de un ejercicio: nombre + músculos + grupo + equipo + alias */
+function textoBuscable(e){
+  const alias=(ALIAS_EJ[e.n]||[]).join(" ");
+  return stripAcc([e.n,e.m,e.g,e.e,alias].join(" "));
+}
+/* ¿Coincide el ejercicio con la consulta? Tolerante: sin acentos y por tokens.
+   "jalon", "press incl", "pec deck" o "curl biceps" encuentran el ejercicio
+   aunque no escribas el nombre exacto. */
+function coincideEj(e,nq){
+  if(!nq)return true;
+  const hay=textoBuscable(e);
+  if(hay.includes(nq))return true;
+  // por tokens: todas las palabras de la consulta deben aparecer
+  const toks=nq.split(" ").filter(Boolean);
+  return toks.length>1 && toks.every(t=>hay.includes(t));
+}
 /* Búsqueda de ejercicios en la librería */
 function buscarEjs(q,grupo,equipo){
-  const nq=(q||"").toLowerCase().trim();
-  return EJS.filter(e=>{
+  const nq=stripAcc(q);
+  // ¿la consulta apunta a un alias directo? (ej. "sentadilla" → Sentadilla con Barra)
+  const aliasCanon=nq&&ALIAS_INDEX[nq];
+  const res=EJS.filter(e=>{
     if(grupo&&e.g!==grupo)return false;
     if(equipo&&e.e!==equipo)return false;
-    if(!nq)return true;
-    return e.n.toLowerCase().includes(nq)||e.m.toLowerCase().includes(nq);
+    return coincideEj(e,nq);
   });
+  // si el término es un apodo exacto, prioriza el ejercicio canónico
+  if(aliasCanon){
+    res.sort((a,b)=>(a.n===aliasCanon?-1:0)-(b.n===aliasCanon?-1:0));
+  }
+  return res;
 }
 function ejPorNombre(n){
   const nn=normEx(n);
-  return EJS.find(e=>normEx(e.n)===nn)||null;
+  const exacto=EJS.find(e=>normEx(e.n)===nn);
+  if(exacto)return exacto;
+  // ¿es un apodo/sinónimo conocido?
+  const canon=ALIAS_INDEX[stripAcc(n)];
+  if(canon)return EJS.find(e=>e.n===canon)||null;
+  return null;
 }
 /* El diccionario ahora usa la librería completa */
 const DICC=EJS;
@@ -294,12 +426,11 @@ function renderDiccionario(){
 }
 function paintDic(){
   const list=document.getElementById("dicList");if(!list)return;
+  const q=stripAcc(dicSearch);
   const res=EJS.filter(d=>{
     if(dicFilter!=="Todos"&&d.g!==dicFilter)return false;
     if(dicEquipo!=="Todo"&&d.e!==dicEquipo)return false;
-    const q=dicSearch.toLowerCase().trim();
-    if(!q)return true;
-    return d.n.toLowerCase().includes(q)||d.m.toLowerCase().includes(q)||d.g.toLowerCase().includes(q);
+    return coincideEj(d,q);
   });
   const cnt=document.getElementById("dicCount");
   if(cnt)cnt.textContent=res.length+(res.length===1?" ejercicio":" ejercicios");

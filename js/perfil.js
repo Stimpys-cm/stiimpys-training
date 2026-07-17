@@ -195,27 +195,6 @@ function semanaPerfecta(){
   });
   return conEx.every(d=>hechos.has(d));
 }
-function findesEntrenados(){
-  const f=new Set();
-  allExercises().forEach(ex=>(DB[ex.id]||[]).forEach(e=>{
-    const d=new Date(e.date+"T00:00:00").getDay();
-    if(d===0||d===6)f.add(e.date);
-  }));
-  return f.size;
-}
-function semanaPerfecta(){
-  const sem=rutinaSemana();
-  const conEx=ALL_DAYS.filter(d=>sem[d]&&sem[d].ex&&sem[d].ex.length);
-  if(!conEx.length)return false;
-  const hoy=new Date();
-  const hechos=new Set();
-  getSesionesDone().forEach(s=>{
-    const d=new Date(s.date+"T00:00:00");
-    const dif=Math.round((hoy-d)/86400000);
-    if(dif>=0&&dif<7&&s.day)hechos.add(s.day);
-  });
-  return conEx.every(d=>hechos.has(d));
-}
 function entrenoAntesDe(hora){
   let ok=false;
   allExercises().forEach(ex=>(DB[ex.id]||[]).forEach(e=>{
@@ -331,6 +310,7 @@ function renderProgreso(){
       ${dv!==null?`<div class="wk-delta ${dv>=0?"up":"down"}">
         ${ICON(dv>=0?'up':'down',13)} ${dv>=0?"+":""}${dv}% de volumen vs. la semana pasada
       </div>`:""}
+      <button class="wk-share" id="wkShare">${ICON('share',15)} Compartir mi semana</button>
     </div>`;
   }
   // MAPA CORPORAL DE RECUPERACIÓN
@@ -372,6 +352,8 @@ function renderProgreso(){
     if(i>=0)arr[i]={date:iso,time,v};else arr.push({date:iso,time,v});
     arr.sort((a,b)=>a.date<b.date?-1:1);saveBW(arr);renderProgreso();
   };
+  const wkS=document.getElementById("wkShare");
+  if(wkS)wkS.onclick=()=>{if(typeof abrirResumenSemanal==="function")abrirResumenSemanal()};
   drawBW();
   drawBodyMap();
   drawVolMusc();
