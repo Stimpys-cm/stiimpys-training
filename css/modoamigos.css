@@ -183,3 +183,11 @@ body.guest-mode .quick-modes{display:none}
   .wrap-scroll{padding:0!important}
   .wrap-card{border-radius:0!important;box-shadow:none!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+
+/* === ESCRITORIO: centrar el modo invitado/amigos en una columna === */
+@media (min-width:800px){
+  #guestApp{padding-left:max(16px,calc((100% - 760px)/2));
+            padding-right:max(16px,calc((100% - 760px)/2))}
+  #weekApp{padding-left:max(14px,calc((100% - 760px)/2));
+           padding-right:max(14px,calc((100% - 760px)/2))}
+}

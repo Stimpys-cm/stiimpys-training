@@ -386,8 +386,8 @@ async function concluirSesion(done,total,label){
   guardarBorradoresPendientes();
   // Recontar tras el autoguardado
   const {iso}=nowStamp();
-  const sem0=rutinaSemana();
-  const exsHoy=(sem0[activeDay]&&sem0[activeDay].ex)||[];
+  // Incluye ejercicios de la rutina + los extra agregados solo para hoy
+  const exsHoy=ejerciciosDelDia(activeDay);
   done=exsHoy.filter(ex=>!!registroDe(exId(ex),activeDay,iso)).length;
   if(done===0){await alertDlg("Aún no has registrado ningún ejercicio hoy.",{title:"Sesión vacía",icon:"warn"});return}
   const ok=await showDialog({title:"¿Concluir sesión?",
@@ -396,9 +396,8 @@ async function concluirSesion(done,total,label){
   if(!ok)return;
   clearDrafts(); // sesión cerrada: limpiar borradores del día
   // registrar la sesión como concluida
-  const sem2=rutinaSemana();
   let volTotal=0;
-  const exsDia=(sem2[activeDay]&&sem2[activeDay].ex)||[];
+  const exsDia=ejerciciosDelDia(activeDay);
   exsDia.forEach(ex=>{const h=registroDe(exId(ex),activeDay,iso);if(h)volTotal+=volumen(h.sets)});
   setSesionesDone([...getSesionesDone().filter(s=>s.date!==iso),{
     date:iso,day:activeDay,label:label||"",
@@ -407,7 +406,7 @@ async function concluirSesion(done,total,label){
   }]);
   // mostrar resumen festivo
   let vol=0;const skipped=getSkipped();
-  const sem=rutinaSemana();const dayEx=(sem[activeDay]&&sem[activeDay].ex)||[];
+  const dayEx=ejerciciosDelDia(activeDay);
   dayEx.forEach(ex=>{const hoy=registroDe(exId(ex),activeDay,iso);if(hoy)vol+=volumen(hoy.sets)});
   lanzarConfetti();
   const body=document.getElementById("ssBody");

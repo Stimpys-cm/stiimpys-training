@@ -198,15 +198,15 @@ svg.chart circle{cursor:pointer}
   background:rgba(255,204,77,.1);border:1px solid rgba(255,204,77,.3);border-radius:10px;padding:10px}
 .plate-warn .ico{color:var(--gold)}
 .btn-plate{background:var(--card2);color:var(--ink);border:1px solid var(--line)}
-.fld-w{display:flex;align-items:center;gap:4px;flex:1.3;min-width:0}
+.fld-w{display:flex;align-items:center;gap:3px;flex:1.6;min-width:0}
 .fld-r{display:flex;align-items:center;gap:5px;flex:1;min-width:0}
 .fld-r .unit{font-size:.68rem;color:var(--dim);font-weight:700;flex:0 0 auto}
-.stp{width:30px;height:38px;flex:0 0 auto;border-radius:9px;background:var(--card);
+.stp{width:28px;height:38px;flex:0 0 auto;border-radius:9px;background:var(--card);
   border:1px solid var(--line);color:var(--sky);font-size:1.15rem;font-weight:800;
   cursor:pointer;line-height:1;padding:0;display:grid;place-items:center}
 .stp:active{transform:scale(.92);background:var(--blue-dim)}
-.in-w{flex:1;min-width:52px}
-.in-r{flex:1;min-width:52px}
+.in-w{flex:1;min-width:44px}
+.in-r{flex:1;min-width:44px}
 .rpe-quick{display:flex;align-items:center;gap:4px;flex:0 0 auto}
 .rpe-lbl{font-size:.6rem;font-weight:800;color:var(--dim);letter-spacing:.06em;margin-right:2px}
 .rq{width:30px;height:30px;border-radius:8px;background:var(--card);border:1px solid var(--line);
@@ -618,7 +618,8 @@ main section{animation:tabIn .32s cubic-bezier(.2,.9,.3,1)}
 .setrow.done .setno{color:var(--ok)}
 .set-vals{flex:1;min-width:0;display:flex;align-items:center;gap:8px}
 .setrow input{min-width:0;width:100%;background:var(--card);border:1px solid var(--line);color:var(--ink);
-  border-radius:10px;padding:10px 6px;font-size:1.02rem;font-weight:700;text-align:center;-webkit-appearance:none}
+  border-radius:10px;padding:10px 3px;font-size:1.02rem;font-weight:700;text-align:center;-webkit-appearance:none;
+  text-overflow:clip}
 .setrow input:focus{outline:none;border-color:var(--blue)}
 .setrow input::placeholder{color:#4a4f60;font-weight:500;font-size:.82rem}
 .setrow .del{width:28px;height:28px;flex:0 0 auto;border-radius:8px;background:none;border:none;
@@ -1149,3 +1150,49 @@ header .logo{flex:1;min-width:0}
 @keyframes loadbar{to{width:100%}}
 @keyframes tabIn{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* === 9. ESCRITORIO (Windows / Mac) ============================= */
+/* La app es una columna de 760px centrada. En pantallas grandes la
+   enmarcamos para que se vea intencional y añadimos feedback de ratón. */
+@media (min-width:800px){
+  html{background:#050507}
+  body{box-shadow:0 0 0 1px var(--line),0 24px 70px rgba(0,0,0,.55);min-height:100vh}
+  /* la barra inferior (fixed) comparte los bordes laterales del marco */
+  .bnav{border-left:1px solid var(--line);border-right:1px solid var(--line)}
+
+  /* Paneles que en movil se deslizan horizontalmente (translateX). En una
+     pantalla mas ancha que la columna, ese deslizamiento los descuadraba a la
+     derecha. En escritorio los convertimos en modales centrados con fundido,
+     alineados sobre el marco de la app. */
+  .rut-editor,.session,.cal-view,.profile{
+    left:50%;right:auto;margin:0;width:100%;max-width:760px;
+    transform:translateX(-50%) translateY(10px);opacity:0;visibility:hidden;
+    transition:opacity .26s ease,transform .26s cubic-bezier(.2,.8,.2,1),visibility .26s;
+    border-left:1px solid var(--line);border-right:1px solid var(--line);
+    box-shadow:0 24px 70px rgba(0,0,0,.6)}
+  .rut-editor.show,.session.show,.cal-view.show,.profile.show{
+    transform:translateX(-50%) translateY(0);opacity:1;visibility:visible}
+}
+
+/* Feedback de puntero fino (mouse/trackpad de Windows y Mac).
+   No aplica en pantallas táctiles, así que el móvil queda intacto. */
+@media (hover:hover) and (pointer:fine){
+  button{cursor:pointer}
+  .gearb:hover,.bnav button:hover,.stp:hover,.rq:hover,.set-check:hover,
+  .ss-mini:hover,.pu:hover,.rd-tab:hover{background:var(--card2)}
+  .stp:hover,.rq:hover,.set-check:hover{border-color:var(--blue)}
+  .setrow .del:hover{opacity:1}
+  .setrow input:hover,.fld input:hover,.fld textarea:hover{border-color:var(--sky)}
+  .auth-submit:hover,.btn-save:hover,.ss-btn:hover{filter:brightness(1.08)}
+  a,.ss-dot:hover{cursor:pointer}
+}
+
+/* Scrollbars en tema oscuro (Chrome/Edge en Windows muestran una gruesa
+   por defecto que choca con la interfaz; en Mac son overlay y no molestan). */
+@media (pointer:fine){
+  *{scrollbar-width:thin;scrollbar-color:var(--card2) transparent}
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--card2);border-radius:8px;border:2px solid var(--bg)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--line)}
+}

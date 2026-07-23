@@ -7,7 +7,11 @@ let calMes=new Date().getMonth();
 let calAnio=new Date().getFullYear();
 let calSel=null;
 
-function isoDe(y,m,d){return y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0")}
+function isoDe(y,m,d){
+  // Acepta (Date) o (año, mes0, día) — evita choque con la otra isoDe del proyecto
+  if(y instanceof Date)return y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0");
+  return y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
+}
 
 /* Todo lo registrado en una fecha concreta */
 function resumenDia(iso){

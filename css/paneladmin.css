@@ -1,0 +1,373 @@
+/* ==========================================================================
+   panel-admin.css — Vista de administrador de escritorio (solo lectura)
+   Se muestra únicamente cuando <body> tiene la clase .admin-on (la pone
+   panel-admin.js en pantallas >=1000px y con sesión iniciada).
+   ========================================================================== */
+
+#adminPanel { display: none; }
+
+/* Al activar el panel ocultamos la interfaz móvil clonada */
+body.admin-on > header,
+body.admin-on > main,
+body.admin-on > nav.bnav,
+body.admin-on > .timer { display: none !important; }
+
+body.admin-on #adminPanel {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 55;                /* debajo del muro de login (que no aparece estando logueado) */
+  overflow-y: auto;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(43, 92, 255, .10), transparent 60%),
+    radial-gradient(900px 500px at 0% 0%, rgba(77, 184, 255, .06), transparent 55%),
+    var(--bg);
+}
+
+.adm-wrap {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 26px 30px 60px;
+}
+
+/* ---------- Barra superior ---------- */
+.adm-top {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 18px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+}
+.adm-brand { font-size: 1.4rem; font-weight: 900; letter-spacing: -.02em; }
+.adm-brand em { color: var(--blue); font-style: normal; }
+.adm-mode {
+  font-size: .62rem; letter-spacing: .16em; text-transform: uppercase;
+  font-weight: 800; color: var(--sky);
+  background: rgba(77, 184, 255, .12); border: 1px solid rgba(77, 184, 255, .3);
+  padding: 5px 11px; border-radius: 999px;
+}
+.adm-account { margin-left: auto; text-align: right; min-width: 180px; }
+.adm-acc-name { font-weight: 800; font-size: .95rem; }
+.adm-acc-lvl { font-size: .72rem; color: var(--dim); margin: 2px 0 5px; }
+.adm-acc-bar { height: 5px; border-radius: 3px; background: var(--card2); overflow: hidden; }
+.adm-acc-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--blue), var(--sky)); }
+
+/* ---------- Bloques ---------- */
+.adm-block {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 20px 22px;
+  margin-bottom: 22px;
+}
+.adm-h2 { font-size: .95rem; font-weight: 800; margin: 0 0 16px; letter-spacing: -.01em; }
+.adm-h2 small { color: var(--dim); font-weight: 600; }
+
+.adm-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.adm-cols .adm-block { margin-bottom: 22px; }
+@media (max-width: 1120px) { .adm-cols { grid-template-columns: 1fr; } }
+
+/* ---------- KPIs ---------- */
+.adm-kpis {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+@media (max-width: 1120px) { .adm-kpis { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 640px)  { .adm-kpis { grid-template-columns: repeat(2, 1fr); } }
+.adm-kpi {
+  background: var(--card2);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px 14px;
+  text-align: center;
+}
+.adm-kpi.accent { border-color: rgba(43, 92, 255, .5); background: linear-gradient(160deg, rgba(43, 92, 255, .16), var(--card2)); }
+.adm-kpi-v { font-size: 1.5rem; font-weight: 900; letter-spacing: -.02em; line-height: 1.1; }
+.adm-kpi-l { font-size: .66rem; letter-spacing: .04em; color: var(--dim); margin-top: 6px; text-transform: uppercase; font-weight: 700; }
+
+.adm-pr {
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 16px; padding: 12px 16px;
+  background: rgba(255, 204, 77, .08);
+  border: 1px solid rgba(255, 204, 77, .3);
+  border-radius: 12px; font-size: .88rem; color: var(--ink);
+}
+.adm-pr b { color: var(--gold); }
+.adm-pr-ic { font-size: 1.1rem; }
+
+/* ---------- Barras por músculo ---------- */
+.adm-bars { display: flex; flex-direction: column; gap: 14px; }
+.adm-bar-row {
+  display: grid;
+  grid-template-columns: 110px 1fr auto;
+  grid-template-areas: "lbl track val" "sub sub sub";
+  align-items: center; gap: 4px 12px;
+}
+.adm-bar-lbl { grid-area: lbl; font-weight: 700; font-size: .84rem; }
+.adm-bar-track { grid-area: track; height: 10px; border-radius: 6px; background: var(--card2); overflow: hidden; }
+.adm-bar-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--blue), var(--sky)); }
+.adm-bar-val { grid-area: val; font-weight: 800; font-size: .82rem; font-variant-numeric: tabular-nums; }
+.adm-bar-sub { grid-area: sub; font-size: .68rem; color: var(--dim); padding-left: 122px; }
+
+/* ---------- Tablas ---------- */
+.adm-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.adm-table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+.adm-table th {
+  text-align: left; font-size: .64rem; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--sky); font-weight: 800; padding: 8px 12px; border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; background: var(--card); white-space: nowrap;
+}
+.adm-table td { padding: 10px 12px; border-bottom: 1px solid rgba(255, 255, 255, .05); white-space: nowrap; }
+.adm-table tbody tr:hover { background: var(--card2); }
+.adm-td-name { font-weight: 700; }
+.adm-num { text-align: right; font-variant-numeric: tabular-nums; }
+.adm-table th.adm-num { text-align: right; }
+.adm-strong { color: var(--gold); font-weight: 800; }
+.adm-dim { color: var(--dim); }
+.adm-tag {
+  font-size: .68rem; font-weight: 700; color: var(--sky);
+  background: rgba(77, 184, 255, .1); border: 1px solid rgba(77, 184, 255, .25);
+  padding: 2px 8px; border-radius: 999px;
+}
+
+.adm-empty { text-align: center; color: var(--dim); padding: 26px 10px; font-size: .88rem; }
+.adm-foot { text-align: center; color: var(--dim); font-size: .74rem; margin-top: 8px; }
+
+/* Refuerzo: por si el navegador es de escritorio pero muy angosto,
+   nunca activamos el panel por debajo de 1000px (lo controla también el JS). */
+@media (max-width: 999px) {
+  body.admin-on > header,
+  body.admin-on > main,
+  body.admin-on > nav.bnav { display: revert !important; }
+  body.admin-on #adminPanel { display: none; }
+}
+
+/* ==========================================================================
+   Alternancia panel <-> registro y adaptación del registro a escritorio
+   ========================================================================== */
+
+/* Botón "Registrar entreno" en la barra del panel admin */
+.adm-switch {
+  margin-left: 4px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 9px 15px;
+  font-size: .82rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: filter .15s, transform .12s;
+}
+.adm-switch:hover { filter: brightness(1.08); }
+.adm-switch:active { transform: scale(.96); }
+
+/* Botón flotante para volver al panel (visible solo en modo registro) */
+#adminToggleBtn {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 45;
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 15px;
+  font-size: .82rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+  transition: background .15s, transform .12s;
+}
+#adminToggleBtn:hover { background: var(--card2); }
+#adminToggleBtn:active { transform: scale(.96); }
+
+/* --------------------------------------------------------------------------
+   MODO ESCRITORIO — SHELL CON BARRA LATERAL (body.desktop-app, >=1000px)
+   Convierte la app móvil en un layout de escritorio: la navegación inferior
+   pasa a ser una barra lateral izquierda y el contenido ocupa todo el ancho
+   restante. Aplica a TODOS los menús (Entreno, Progreso, Diccionario…).
+   El móvil NO se toca: todo vive dentro de este @media y bajo .desktop-app,
+   que solo se activa en pantallas anchas.
+   -------------------------------------------------------------------------- */
+@media (min-width: 1000px) {
+  body.desktop-app { max-width: none; margin: 0; }
+
+  /* ---- Navegación como barra lateral izquierda ---- */
+  body.desktop-app .bnav {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 220px; max-width: 220px; margin: 0;
+    flex-direction: column; justify-content: flex-start; align-items: stretch;
+    gap: 4px; padding: 22px 12px 20px;
+    border-top: none; border-right: 1px solid var(--line);
+    background: rgba(16, 16, 20, .75);
+  }
+  body.desktop-app .bnav button {
+    flex: 0 0 auto; flex-direction: row; justify-content: flex-start;
+    gap: 13px; padding: 12px 14px; font-size: .92rem; border-radius: 12px;
+  }
+  body.desktop-app .bnav button .ic { font-size: 1.25rem; }
+  body.desktop-app .bnav button .ico { width: 22px; height: 22px; }
+  body.desktop-app .bnav button.active { background: var(--blue-dim); color: var(--sky); }
+  body.desktop-app .bnav button.active::before { display: none; }
+
+  /* ---- Cabecera y contenido desplazados a la derecha del sidebar ---- */
+  body.desktop-app header {
+    margin-left: 220px;
+    padding: 22px 40px 16px;
+  }
+  body.desktop-app main {
+    margin-left: 220px;
+    padding: 14px 40px 60px;
+    min-height: auto;
+  }
+  /* TODO el contenido dentro de una misma columna: así los botones grandes
+     quedan alineados exactamente con la fila de ejercicios de arriba. */
+  body.desktop-app main > section { max-width: 1280px; margin: 0 auto; }
+
+  /* ---- Pantalla de Entreno ---- */
+  body.desktop-app .days { flex-wrap: wrap; }
+
+  /* Ejercicios: rejilla homogénea y responsiva (min 230px => 5 col en grande,
+     3-4 en laptops medianas, sin cortar texto). */
+  body.desktop-app #exList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 14px;
+    align-items: start;
+    margin-top: 16px;
+  }
+  /* min-width:0 evita que una tarjeta con nombre largo se niegue a encogerse
+     y desborde unos píxeles a la derecha (items de grid son min-content por
+     defecto). Así el borde derecho queda 100% alineado con los botones. */
+  body.desktop-app #exList .ex { margin-bottom: 0; min-width: 0; }
+  /* Nombre del ejercicio siempre en una sola línea limpia */
+  body.desktop-app #exList .ex-name {
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* Tarjeta ABIERTA en horizontal: ocupa toda la fila y coloca las series
+     (.setrow) una al lado de la otra en vez de apiladas en vertical. Lo demás
+     (sugerencias, calentamiento, botones, 1RM) queda a todo el ancho. */
+  body.desktop-app #exList .ex.open { grid-column: 1 / -1; }
+  body.desktop-app #exList .ex.open .ex-body {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  body.desktop-app #exList .ex.open .ex-body > .setrow {
+    flex: 1 1 260px;
+    max-width: 360px;
+    margin-bottom: 0;
+  }
+  body.desktop-app #exList .ex.open .ex-body > *:not(.setrow) {
+    flex: 1 1 100%;
+  }
+
+  /* Iniciar/modos/concluir/saltar comparten el ancho de la columna (1280px)
+     para quedar alineados con la rejilla. */
+  body.desktop-app #exList .add-ex-btn,
+  body.desktop-app #exList .conclude-btn,
+  body.desktop-app #exList .skipday-btn {
+    grid-column: 1 / -1;
+    margin-top: 12px;
+  }
+
+  /* Jerarquía de "Concluir sesión":
+     - Sin progreso  -> botón secundario (outline verde), discreto.
+     - Con >=1 registrado -> verde sólido y protagonista (estilo base).
+     panel-admin.js añade .has-progress según el contador "X de N". */
+  body.desktop-app #exList .conclude-btn:not(.has-progress) {
+    background: transparent;
+    border: 1.5px solid rgba(0, 208, 156, .55);
+    box-shadow: none;
+    cursor: not-allowed;      /* comunica que aún falta registrar trabajo */
+  }
+  body.desktop-app #exList .conclude-btn:not(.has-progress) span,
+  body.desktop-app #exList .conclude-btn:not(.has-progress) small,
+  body.desktop-app #exList .conclude-btn:not(.has-progress) .ico {
+    color: var(--ok);
+    opacity: .6;              /* texto atenuado hasta el primer ejercicio */
+  }
+
+  /* ---- Legibilidad de textos secundarios en escritorio ---- */
+  body.desktop-app .sec-sub,
+  body.desktop-app .foot,
+  body.desktop-app .skipday-btn small,
+  body.desktop-app .ex-last { color: #aeb2be; }
+
+  /* El botón flotante de "Vista administrador" no choca con el sidebar */
+  body.desktop-app #adminToggleBtn { bottom: 24px; right: 24px; }
+}
+
+/* --------------------------------------------------------------------------
+   Sidebar colapsado (solo íconos) en pantallas medianas: 1000–1240px.
+   Gana área de trabajo en laptops sin sacrificar la navegación.
+   -------------------------------------------------------------------------- */
+@media (min-width: 1000px) and (max-width: 1240px) {
+  body.desktop-app .bnav { width: 74px; max-width: 74px; padding: 22px 8px 20px; }
+  body.desktop-app .bnav button { justify-content: center; gap: 0; padding: 13px 0; font-size: 0; }
+  body.desktop-app .bnav button .ic { font-size: 1.35rem; }
+  body.desktop-app .bnav button .ico { width: 24px; height: 24px; }
+  body.desktop-app header,
+  body.desktop-app main { margin-left: 74px; }
+}
+
+/* ==========================================================================
+   Ejercicios extra "solo por hoy" — botón agregar y tarjetas extra
+   (aplica en móvil y escritorio; extras.js inserta estos elementos)
+   ========================================================================== */
+.add-ex-btn {
+  width: 100%;
+  margin-top: 10px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  background: var(--card2);
+  border: 1.5px dashed rgba(43, 92, 255, .5);
+  color: var(--sky);
+  border-radius: 16px;
+  padding: 14px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .12s;
+}
+.add-ex-btn span { font-size: .98rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+.add-ex-btn small { font-size: .72rem; font-weight: 600; color: var(--dim); }
+.add-ex-btn .ico { color: var(--sky); }
+.add-ex-btn:hover { border-color: var(--blue); background: var(--blue-dim); }
+.add-ex-btn:active { transform: scale(.98); }
+
+/* Marca visual de un ejercicio agregado solo para hoy */
+.ex.is-extra { border-color: rgba(43, 92, 255, .45); }
+.ex-remove {
+  width: 28px; height: 28px; flex: 0 0 auto; margin-left: 6px;
+  border-radius: 8px;
+  background: rgba(255, 84, 112, .12);
+  border: 1px solid rgba(255, 84, 112, .3);
+  color: var(--hot);
+  display: grid; place-items: center; cursor: pointer;
+}
+.ex-remove:active { transform: scale(.9); }
+
+/* ==========================================================================
+   Ejercicios similares en el diccionario (los inserta buscador.js)
+   ========================================================================== */
+.dic-similares { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.06); }
+.dic-similares .dm-lbl { display: block; margin-bottom: 8px; }
+.sim-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.sim-chip {
+  background: var(--card2);
+  border: 1px solid var(--line);
+  color: var(--sky);
+  border-radius: 999px;
+  padding: 7px 13px;
+  font-size: .8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .12s;
+}
+.sim-chip:hover { border-color: var(--blue); background: var(--blue-dim); }
+.sim-chip:active { transform: scale(.95); }

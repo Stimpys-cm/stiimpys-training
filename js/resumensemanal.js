@@ -166,7 +166,11 @@ function pintarResumenSemanal(st){
     catch(e){window.open("https://wa.me/?text="+encodeURIComponent(txt),"_blank");}
   };
 }
-function isoDe(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function isoDe(y,m,d){
+  // Acepta (Date) o (año, mes0, día) — misma firma unificada que en calendario.js
+  if(y instanceof Date)return y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0");
+  return y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0");
+}
 
 function cardPublicoHTML(st,rango){
   const top=st.perEx.filter(e=>e.topW>0).slice(0,5);
